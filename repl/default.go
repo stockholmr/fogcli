@@ -10,6 +10,6 @@ func AddCommand(cmd *Command) {
 	c.Groups["default"].Commands[cmd.Name] = cmd
 }
 
-func Parse(command string) (*Command, []string, error) {
+func Parse(command string) (*Command, map[string]string, error) {
 	return c.Parse(command)
 }

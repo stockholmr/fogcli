@@ -5,6 +5,8 @@ type Command struct {
 	Description string
 	Help        string
 	Cmd         func(args ...string)
+    RequiredArgs []string
+    OptionalArgs []string
 }
 
 type CommandGroup struct {

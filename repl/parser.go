@@ -5,18 +5,38 @@ import (
 	"strings"
 )
 
-func (c *Commander) parseArgs(arr []string, startIndex int) ([]string, error) {
-	if startIndex > len(arr)-1 {
+func (c *Commander) parseParams(arr []string, startIndex int) (map[string]string, error) {
+	arrayLength := len(arr)
+
+	if startIndex > arrayLength-1 {
 		return nil, errors.New("invalid start index out of bounds")
 	}
-	newArr := make([]string, 0)
+
+	newArr := make(map[string]string, 0)
+
+	parsed := 0
 	for i := startIndex; i < len(arr); i++ {
-		newArr = append(newArr, arr[i])
+		if i != parsed {
+			var paramKey, paramValue string
+			paramKey = arr[i]
+
+			if paramKey[0:1] != "-" {
+				return nil, errors.New("invalid parameter. Parameters start with -")
+			}
+
+			if i+1 < arrayLength {
+				paramValue = arr[i+1]
+				parsed = i + 1
+			}
+
+			paramKey = strings.ToLower(strings.Replace(paramKey, "-", "", 1))
+			newArr[paramKey] = paramValue
+		}
 	}
 	return newArr, nil
 }
 
-func (c *Commander) Parse(command string) (*Command, []string, error) {
+func (c *Commander) Parse(command string) (*Command, map[string]string, error) {
 
 	commandArr := strings.Split(command, " ")
 
@@ -25,7 +45,7 @@ func (c *Commander) Parse(command string) (*Command, []string, error) {
 	}
 
 	var _command *Command
-	var _args []string
+	var _args map[string]string
 	var err error
 
 	firstItem := strings.ToLower(commandArr[0])
@@ -33,7 +53,7 @@ func (c *Commander) Parse(command string) (*Command, []string, error) {
 	if command, ok := c.Groups["default"].Commands[firstItem]; ok {
 		// is default command
 		if len(commandArr) > 1 {
-			_args, err = c.parseArgs(commandArr, 1)
+			_args, err = c.parseParams(commandArr, 1)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -48,7 +68,7 @@ func (c *Commander) Parse(command string) (*Command, []string, error) {
 			if command, ok := group.Commands[secondItem]; ok {
 
 				if len(commandArr) > 2 {
-					_args, err = c.parseArgs(commandArr, 2)
+					_args, err = c.parseParams(commandArr, 2)
 					if err != nil {
 						return nil, nil, err
 					}
