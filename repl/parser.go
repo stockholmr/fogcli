@@ -12,7 +12,7 @@ func (c *Commander) parseParams(arr []string, startIndex int) (map[string]string
 		return nil, errors.New("invalid start index out of bounds")
 	}
 
-	newArr := make(map[string]string, 0)
+	cp := make(map[string]string, 0)
 
 	parsed := 0
 	for i := startIndex; i < len(arr); i++ {
@@ -25,15 +25,15 @@ func (c *Commander) parseParams(arr []string, startIndex int) (map[string]string
 			}
 
 			if i+1 < arrayLength {
-				paramValue = arr[i+1]
+				paramValue = strings.TrimSpace(arr[i+1])
 				parsed = i + 1
 			}
 
 			paramKey = strings.ToLower(strings.Replace(paramKey, "-", "", 1))
-			newArr[paramKey] = paramValue
+			cp[paramKey] = paramValue
 		}
 	}
-	return newArr, nil
+	return cp, nil
 }
 
 func (c *Commander) Parse(command string) (*Command, map[string]string, error) {
@@ -45,7 +45,7 @@ func (c *Commander) Parse(command string) (*Command, map[string]string, error) {
 	}
 
 	var _command *Command
-	var _args map[string]string
+	var _params map[string]string
 	var err error
 
 	firstItem := strings.ToLower(commandArr[0])
@@ -53,7 +53,7 @@ func (c *Commander) Parse(command string) (*Command, map[string]string, error) {
 	if command, ok := c.Groups["default"].Commands[firstItem]; ok {
 		// is default command
 		if len(commandArr) > 1 {
-			_args, err = c.parseParams(commandArr, 1)
+			_params, err = c.parseParams(commandArr, 1)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -68,7 +68,7 @@ func (c *Commander) Parse(command string) (*Command, map[string]string, error) {
 			if command, ok := group.Commands[secondItem]; ok {
 
 				if len(commandArr) > 2 {
-					_args, err = c.parseParams(commandArr, 2)
+					_params, err = c.parseParams(commandArr, 2)
 					if err != nil {
 						return nil, nil, err
 					}
@@ -82,5 +82,5 @@ func (c *Commander) Parse(command string) (*Command, map[string]string, error) {
 		return nil, nil, errors.New("invalid command")
 	}
 
-	return _command, _args, nil
+	return _command, _params, nil
 }

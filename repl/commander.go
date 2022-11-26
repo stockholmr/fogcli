@@ -4,9 +4,8 @@ type Command struct {
 	Name        string
 	Description string
 	Help        string
-	Cmd         func(args ...string)
-    RequiredArgs []string
-    OptionalArgs []string
+	Cmd         func(map[string]string)
+	Params      []string
 }
 
 type CommandGroup struct {
@@ -14,6 +13,10 @@ type CommandGroup struct {
 	Description string
 	Help        string
 	Commands    map[string]*Command
+}
+
+func (c *CommandGroup) AddCommand(cmd *Command) {
+	c.Commands[cmd.Name] = cmd
 }
 
 type Commander struct {
@@ -30,23 +33,16 @@ func NewCommander() *Commander {
 		"",
 		"",
 	)
-
-	helpCommand := NewCommand(
-		"help",
-		"show help",
-		"",
-		cmd.DisplayHelp,
-	)
-
-	exitCommand := NewCommand(
-		"exit",
-		"exit application",
-		"",
-		nil,
-	)
-
-	defaultGroup.Commands[helpCommand.Name] = helpCommand
-	defaultGroup.Commands[exitCommand.Name] = exitCommand
+	defaultGroup.Commands["help"] = &Command{
+		Name:        "help",
+		Description: "Show help",
+		Cmd:         cmd.DisplayHelp,
+	}
+	defaultGroup.Commands["exit"] = &Command{
+		Name:        "exit",
+		Description: "Exit Application",
+		Cmd:         nil,
+	}
 	cmd.Groups[defaultGroup.Name] = defaultGroup
 
 	return cmd
@@ -61,19 +57,10 @@ func NewCommandGroup(name string, description string, help string) *CommandGroup
 	}
 }
 
-func NewCommand(name string, description string, help string, f func(args ...string)) *Command {
-	return &Command{
-		Name:        name,
-		Description: description,
-		Help:        help,
-		Cmd:         f,
-	}
-}
-
 func (c *Commander) AddCommand(cmd *Command) {
 	c.Groups["default"].Commands[cmd.Name] = cmd
 }
 
-func (c *Commander) DisplayHelp(args ...string) {
+func (c *Commander) DisplayHelp(params map[string]string) {
 
 }
