@@ -14,14 +14,13 @@ func Connect(hostname string, username string, password string, database string)
 	var err error
 
 	connectionString := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
 		username,
 		password,
 		hostname,
 		3306,
 		database,
 	)
-
 	_db, err = sqlx.Connect("mysql", connectionString)
 	if err != nil {
 		logging.Fatal(err.Error())

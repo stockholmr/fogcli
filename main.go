@@ -6,13 +6,12 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-)
+	"syscall"
 
-func clearScreen() {
-	cmd := exec.Command("clear")
-	cmd.Stdout = os.Stdout
-	cmd.Run()
-}
+	"github.com/stockholmr/fogcli/fog"
+	"github.com/stockholmr/fogcli/repl"
+	"golang.org/x/term"
+)
 
 func cleanInput(text string) string {
 	output := strings.TrimSpace(text)
@@ -21,24 +20,17 @@ func cleanInput(text string) string {
 }
 
 func main() {
-	commands := map[string]interface{}{
-		".clear":   clearScreen,
-		".connect": cmd.Connect,
-	}
 
 	reader := bufio.NewScanner(os.Stdin)
 	for reader.Scan() {
-		text := cleanInput(reader.Text())
-
-		if command, exists := commands[text]; exists {
-			// Call a hardcoded function
-			command.(func())()
-		} else if strings.EqualFold(".exit", text) {
-			// Close the program on the exit command
-			return
+		cmd, args, err := repl.Parse(reader.Text())
+		if err != nil {
+			fmt.Println(err.Error())
 		} else {
-			// Pass the command to the parser
-			//handleCmd(text)
+			if cmd.Name == "exit" {
+				return
+			}
+			cmd.Cmd(args...)
 		}
 	}
 	// Print an additional line if we encountered an EOF character
